@@ -43,6 +43,7 @@ typedef struct {
     Camera2D camera;
     Rectangle def_rect;
     GravData grav_data;
+    Rectangle eyes[2];
 } PlayerRec;
 
 typedef struct {
@@ -81,6 +82,35 @@ static EntityRec entity = {
     .grounded = true,
 };
 
+#define set_player_eyes(player)                     \
+    do {                                            \
+        player.eyes[0] = (Rectangle) {              \
+            .x = player.pos.x + 1.7778,             \
+            .y = player.pos.y + 2.6667,             \
+            .width = 1.33335,                       \
+            .height = 2.6667,                       \
+        };                                          \
+        player.eyes[1] = (Rectangle) {              \
+            .x = player.pos.x + 2.6667 + 1.7778,    \
+            .y = player.pos.y + 2.6667,             \
+            .width = 1.33335,                       \
+            .height = 2.6667,                       \
+        };                                          \
+    } while (0)
+
+#define draw_player_eyes(player)                    \
+    for (size_t i = 0; i < 2; ++i) {                \
+        DrawRectangleRec(player.eyes[i], BLACK);    \
+    }                                               \
+
+#define update_player_eyes_pos(player)                          \
+    do {                                                        \
+        player.eyes[0].x = player.pos.x + 1.7778;               \
+        player.eyes[0].y = player.pos.y + 2.6667;               \
+        player.eyes[1].x = player.pos.x + 2.6667 + 1.7778;      \
+        player.eyes[1].y = player.pos.y + 2.6667;               \
+    } while (0)
+
 
 #define init_camera(player)                                                          \
     do {                                                                             \
@@ -114,12 +144,12 @@ static EntityRec entity = {
     } while (0)
 
 
-#define za_warudo()                                         \
-    do {                                                    \
+#define za_warudo()                                                               \
+    do {                                                                          \
         if ((IsKeyDown(KEY_H) || IsKeyDown(KEY_Z)) && player.pos_data.count > 0)  \
-            HandleRewind();                                 \
-        else                                                \
-            HandleSTC();                                    \
+            HandleRewind();                                                       \
+        else                                                                      \
+            HandleSTC();                                                          \
     } while (0)                                             
 
 #include "test_world_data.h"

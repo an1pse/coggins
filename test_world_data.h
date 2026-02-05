@@ -60,10 +60,10 @@ void DefineTestWorldRects()
 }
 
 #define update_cannon_plat_pos(rect) rect->pos = Vector2Add(rect->pos, Vector2Scale(cannon_plats.vel, GetFrameTime()))
-#define update_cannon_def_rect(rect)               \
-    do {                                    \
-        rect->def_rect.x = rect->pos.x;       \
-        rect->def_rect.y = rect->pos.y;       \
+#define update_cannon_def_rect(rect)                \
+    do {                                            \
+        rect->def_rect.x = rect->pos.x;             \
+        rect->def_rect.y = rect->pos.y;             \
     } while (0)
 
 static inline

@@ -82,6 +82,8 @@ void HandleSTC()
     player.camera.target = player.pos;
     DrawRectangleV(player.pos, player.size, ORANGE);
     DrawRectangleV(entity.pos, entity.size, RED);
+    update_player_eyes_pos(player);
+    draw_player_eyes(player);
     draw_plats();
     FireCannonPlats();
     DrawRectangleV(cannon.pos, cannon.size, BLUE);
@@ -97,6 +99,7 @@ int main(void)
     SetTargetFPS(TARGET_FPS);
     init_camera(player);
     define_rect(player);
+    set_player_eyes(player);
     define_rect(entity);
     DefineTestWorldRects();
     DefineEntityPlatformBoundaries();

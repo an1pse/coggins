@@ -98,6 +98,7 @@ void HandleSTC()
     da_append(&entity.pos_data, entity.pos);
 }
 
+static inline
 void EditMode()
 {
     static bool open = true;

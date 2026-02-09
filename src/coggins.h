@@ -114,6 +114,7 @@ PlayerRec player = {
     .grounded = false,
 };
 #endif
+
 PlayerRec player;
 EntityRec entity;
 

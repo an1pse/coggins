@@ -15,6 +15,11 @@ void EntityMove()
 static inline 
 void HandleInputs() 
 {
+    if (IsKeyPressed(KEY_GRAVE)) {
+        if (game_state == GAMEPLAY) game_state = EDIT;
+        else if (game_state == EDIT) game_state = GAMEPLAY;
+    }
+
     if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) player.vel.x = -MOVE_SPEED;
     else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) player.vel.x = MOVE_SPEED;
     else player.vel.x = 0;
@@ -29,7 +34,7 @@ void HandleInputs()
     update_pos(player);
     update_def_rect(player);
 
-    da_foreach(PlatformRec, plat, &cannon_plats) {
+   da_foreach(PlatformRec, plat, &cannon_plats) {
         if (CheckCollisionRecs(player.def_rect, plat->def_rect)) {
             player.pos.y = plat->pos.y - player.size.y;
             player.vel.x = 30.0f;
@@ -81,9 +86,9 @@ void HandleSTC()
     EntityMove();
     player.camera.target = player.pos;
     DrawRectangleV(player.pos, player.size, ORANGE);
-    DrawRectangleV(entity.pos, entity.size, RED);
-    update_player_eyes_pos(player);
     draw_player_eyes(player);
+    update_player_eyes_pos(player);
+    DrawRectangleV(entity.pos, entity.size, RED);
     draw_plats();
     FireCannonPlats();
     DrawRectangleV(cannon.pos, cannon.size, BLUE);
@@ -93,26 +98,50 @@ void HandleSTC()
     da_append(&entity.pos_data, entity.pos);
 }
 
+void EditMode()
+{
+    static bool open = true;
+    rlImGuiBegin();
+    if (ImGui::Begin("Hello Coggins", &open)) {
+        ImGui::TextUnformatted(ICON_FA_JEDI);
+    } ImGui::End();
+    rlImGuiEnd();
+}
+
 int main(void)
 {
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
     SetTargetFPS(TARGET_FPS);
+    rlImGuiSetup(true);
     init_camera(player);
     define_rect(player);
-    set_player_eyes(player);
+    player.SetPlayerEyes();
     define_rect(entity);
     DefineTestWorldRects();
     DefineEntityPlatformBoundaries();
     
     while (!WindowShouldClose()) {
-        BeginDrawing();
-        ClearBackground(DARKGRAY);
-        DrawText(TextFormat("Gravity Factor: %f", player.vel.y), 4, 32, 32, GREEN);
-        DrawText(TextFormat("Position Y: %f", player.pos.y), 4, 72, 32, GREEN);
-        BeginMode2D(player.camera);
-        za_warudo();
-        EndMode2D();
-        EndDrawing();
+        if (IsWindowResized()) init_camera(player);
+
+        if (game_state == EDIT) {                                                     
+            BeginDrawing();
+            ClearBackground(DARKGRAY);
+            EditMode();
+            EndDrawing();
+        } else if (game_state == GAMEPLAY) {                                          
+            BeginDrawing();
+            ClearBackground(DARKGRAY);
+            BeginMode2D(player.camera);
+
+            if ((IsKeyDown(KEY_H) || IsKeyDown(KEY_Z)) && player.pos_data.count > 0)  
+                HandleRewind();                                                       
+            else                                                                      
+                HandleSTC();                                                          
+
+            EndMode2D();
+            EndDrawing();
+        }
     }
 
     CloseWindow();

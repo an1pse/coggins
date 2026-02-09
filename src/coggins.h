@@ -5,7 +5,9 @@
 #include <raylib.h>
 #include <raymath.h>
 
-#include "nob.h"
+#include <imgui.h>
+#include <rlImGui.h>
+#include "../nob.h"
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 960
@@ -14,6 +16,11 @@
 
 #define MOVE_SPEED 150
 #define GRAVITY_FACTOR 800 * GetFrameTime()
+
+typedef enum {
+    EDIT,
+    GAMEPLAY,
+} GameplayMode;
 
 typedef struct {
     Vector2 *items;
@@ -33,7 +40,7 @@ typedef struct {
     size_t capacity;
 } GravData;
 
-typedef struct {
+struct PlayerRec {
     Vector2 pos;
     Vector2 size;
     Vector2 vel;
@@ -44,9 +51,33 @@ typedef struct {
     Rectangle def_rect;
     GravData grav_data;
     Rectangle eyes[2];
-} PlayerRec;
 
-typedef struct {
+    PlayerRec() {
+        pos = (Vector2){ .x = WINDOW_WIDTH/2, .y = WINDOW_HEIGHT/2 };
+        size = (Vector2){ .x = 8.0f, .y = 8.0f };
+        vel = (Vector2){ 0.0f, 0.0f };
+        pos_data = {0};
+        gdata = {0};
+        grounded = false;
+    }
+
+    void SetPlayerEyes() {
+        eyes[0] = (Rectangle) {              
+            .x = pos.x + 1.7778,             
+            .y = pos.y + 2.6667,             
+            .width = 1.33335,                       
+            .height = 2.6667,                       
+        };                                          
+        eyes[1] = (Rectangle) {              
+            .x = pos.x + 2.6667 + 1.7778,
+            .y = pos.y + 2.6667,             
+            .width = 1.33335,                       
+            .height = 2.6667,                       
+        };
+    }
+};
+
+struct EntityRec {
     Vector2 pos;
     Vector2 size;
     Vector2 vel;
@@ -54,7 +85,16 @@ typedef struct {
     PosData pos_data;
     GroundData gdata;
     Rectangle def_rect;
-} EntityRec;
+
+    EntityRec() {
+        pos = (Vector2){ .x = (WINDOW_WIDTH/2 + 32), .y = (WINDOW_HEIGHT/2 + 38) - 8.0f };
+        size = (Vector2){ .x = 8.0f, .y = 8.0f };
+        vel = (Vector2){ .x = 80.0f,  .y = 0.0f };
+        pos_data = {0};
+        gdata = {0};
+        grounded = true;
+    }
+};
 
 typedef struct {
     Vector2 pos;
@@ -64,7 +104,8 @@ typedef struct {
     PosData pos_data;
 } PlatformRec;
 
-static PlayerRec player = {
+#if 0
+PlayerRec player = {
     .pos = (Vector2){ .x = WINDOW_WIDTH/2, .y = WINDOW_HEIGHT/2 },
     .size = (Vector2){ .x = 8.0f, .y = 8.0f },
     .vel = (Vector2){ 0.0f, 0.0f },
@@ -72,8 +113,12 @@ static PlayerRec player = {
     .gdata = {0},
     .grounded = false,
 };
+#endif
+PlayerRec player;
+EntityRec entity;
 
-static EntityRec entity = {
+#if 0
+EntityRec entity = {
     .pos = (Vector2){ .x = (WINDOW_WIDTH/2 + 32), .y = (WINDOW_HEIGHT/2 + 38) - 8.0f },
     .size = (Vector2){ .x = 8.0f, .y = 8.0f },
     .vel = (Vector2){ 80.0f, 0.0f },
@@ -81,22 +126,9 @@ static EntityRec entity = {
     .gdata = {0},
     .grounded = true,
 };
+#endif
 
-#define set_player_eyes(player)                     \
-    do {                                            \
-        player.eyes[0] = (Rectangle) {              \
-            .x = player.pos.x + 1.7778,             \
-            .y = player.pos.y + 2.6667,             \
-            .width = 1.33335,                       \
-            .height = 2.6667,                       \
-        };                                          \
-        player.eyes[1] = (Rectangle) {              \
-            .x = player.pos.x + 2.6667 + 1.7778,    \
-            .y = player.pos.y + 2.6667,             \
-            .width = 1.33335,                       \
-            .height = 2.6667,                       \
-        };                                          \
-    } while (0)
+GameplayMode game_state = GAMEPLAY;
 
 #define draw_player_eyes(player)                    \
     for (size_t i = 0; i < 2; ++i) {                \
@@ -127,7 +159,7 @@ static EntityRec entity = {
             .width = rect.size.x,           \
             .height = rect.size.y,          \
         };                                  \
-    } while (0)
+    } while (0) 
 
 #define update_def_rect(rect)               \
     do {                                    \
@@ -142,15 +174,6 @@ static EntityRec entity = {
             DrawRectangleV(plats[i].pos, plats[i].size, LIGHTGRAY);     \
         }                                                               \
     } while (0)
-
-
-#define za_warudo()                                                               \
-    do {                                                                          \
-        if ((IsKeyDown(KEY_H) || IsKeyDown(KEY_Z)) && player.pos_data.count > 0)  \
-            HandleRewind();                                                       \
-        else                                                                      \
-            HandleSTC();                                                          \
-    } while (0)                                             
 
 #include "test_world_data.h"
 

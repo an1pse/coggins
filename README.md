@@ -10,7 +10,7 @@ $ ./coggins
 ```
 
 Controls:
-A, Left Key: Move Left
-D, Right Key: Move Right
-J, Spacebar: Jump
-H, Z: Rewind
+* A, Left Key: Move Left
+* D, Right Key: Move Right
+* J, Spacebar: Jump
+* H, Z: Rewind

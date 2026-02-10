@@ -16,6 +16,7 @@
 
 #define MOVE_SPEED 150
 #define GRAVITY_FACTOR 800 * GetFrameTime()
+#define update_pos(rect) rect.pos = Vector2Add(rect.pos, Vector2Scale(rect.vel, GetFrameTime()))
 
 enum GameplayMode {
     EDIT,
@@ -58,12 +59,8 @@ struct Player : public Entity {
 };
 
 struct Enemy : public Entity {
-    Enemy() {
-        pos = (Vector2){ .x = (WINDOW_WIDTH/2 + 32), .y = (WINDOW_HEIGHT/2 + 38) - 8.0f };
-        size = (Vector2){ .x = 8.0f, .y = 8.0f };
-        vel = (Vector2){ .x = 80.0f,  .y = 0.0f };
-        grounded = true;
-    }
+    Enemy(); 
+    void Draw();
 };
 
 struct PlatformRec{
@@ -90,7 +87,6 @@ struct PlatformRec{
         rect.def_rect.y = rect.pos.y;       \
     } while (0)
 
-#define update_pos(rect) rect.pos = Vector2Add(rect.pos, Vector2Scale(rect.vel, GetFrameTime()))
 #define draw_plats()                                                    \
     do {                                                                \
         for (size_t i = 0; i < MAX_PLAT; ++i) {                         \

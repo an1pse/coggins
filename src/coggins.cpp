@@ -40,7 +40,7 @@ void HandleInputs()
     update_pos(player);
     update_def_rect(player);
 
-   da_foreach(auto, plat, &cannon_plats) {
+    da_foreach(auto, plat, &cannon_plats) {
         if (CheckCollisionRecs(player.def_rect, plat->def_rect)) {
             player.pos.y = plat->pos.y - player.size.y;
             player.vel.x = 30.0f;
@@ -64,14 +64,9 @@ void HandleRewind()
 {
     player.Rewind();
     player.Update();
-    
-    entity.pos = da_last(&entity.pos_data);
-    update_def_rect(entity);
-    da_remove_unordered(&entity.pos_data, entity.pos_data.count-1);
-
+    entity.Rewind();
+    entity.Draw();
     player.Draw();
-    DrawRectangleV(entity.pos, entity.size, RED);
-
     draw_plats();
     RewindCannonPlats();
     DrawRectangleV(cannon.pos, cannon.size, BLUE);
@@ -85,12 +80,12 @@ void HandleSTC()
     player.camera.target = player.pos;
     player.Draw();
     player.Update();
-    DrawRectangleV(entity.pos, entity.size, RED);
+    entity.Draw();
     draw_plats();
     FireCannonPlats();
     DrawRectangleV(cannon.pos, cannon.size, BLUE);
     player.AppendData(); 
-    da_append(&entity.pos_data, entity.pos);
+    entity.AppendData();
 }
 
 static inline
@@ -110,7 +105,6 @@ int main(void)
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
     SetTargetFPS(TARGET_FPS);
     rlImGuiSetup(true);
-    define_rect(entity);
     DefineTestWorldRects();
     DefineEntityPlatformBoundaries();
     

@@ -17,140 +17,62 @@
 #define MOVE_SPEED 150
 #define GRAVITY_FACTOR 800 * GetFrameTime()
 
-typedef enum {
+enum GameplayMode {
     EDIT,
     GAMEPLAY,
-} GameplayMode;
-
-typedef struct {
-    Vector2 *items;
-    size_t count;
-    size_t capacity;
-} PosData;
-
-typedef struct {
-    bool *items;
-    size_t count;
-    size_t capacity;
-} GroundData;
-
-typedef struct {
-    float *items;
-    size_t count;
-    size_t capacity;
-} GravData;
-
-struct PlayerRec {
-    Vector2 pos;
-    Vector2 size;
-    Vector2 vel;
-    bool grounded;
-    PosData pos_data;
-    GroundData gdata;
-    Camera2D camera;
-    Rectangle def_rect;
-    GravData grav_data;
-    Rectangle eyes[2];
-
-    PlayerRec() {
-        pos = (Vector2){ .x = WINDOW_WIDTH/2, .y = WINDOW_HEIGHT/2 };
-        size = (Vector2){ .x = 8.0f, .y = 8.0f };
-        vel = (Vector2){ 0.0f, 0.0f };
-        pos_data = {0};
-        gdata = {0};
-        grounded = false;
-    }
-
-    void SetPlayerEyes() {
-        eyes[0] = (Rectangle) {              
-            .x = pos.x + 1.7778,             
-            .y = pos.y + 2.6667,             
-            .width = 1.33335,                       
-            .height = 2.6667,                       
-        };                                          
-        eyes[1] = (Rectangle) {              
-            .x = pos.x + 2.6667 + 1.7778,
-            .y = pos.y + 2.6667,             
-            .width = 1.33335,                       
-            .height = 2.6667,                       
-        };
-    }
 };
 
-struct EntityRec {
+template <typename T>
+struct HandmadeDA {
+    T *items;
+    size_t count;
+    size_t capacity;
+};
+
+struct Entity {
     Vector2 pos;
     Vector2 size;
     Vector2 vel;
     bool grounded;
-    PosData pos_data;
-    GroundData gdata;
+    HandmadeDA<Vector2> pos_data;
+    HandmadeDA<bool> gdata;
     Rectangle def_rect;
 
-    EntityRec() {
+    virtual void Update();
+    virtual void Draw();
+    virtual void Rewind(); 
+    virtual void AppendData(); 
+};
+
+struct Player : public Entity {
+    HandmadeDA<float> grav_data;
+    Camera2D camera;
+    Rectangle eyes[2];
+
+    Player();
+    void Update();
+    void Draw();
+    void Rewind();
+    void RecenterCam();
+    void AppendData();
+};
+
+struct Enemy : public Entity {
+    Enemy() {
         pos = (Vector2){ .x = (WINDOW_WIDTH/2 + 32), .y = (WINDOW_HEIGHT/2 + 38) - 8.0f };
         size = (Vector2){ .x = 8.0f, .y = 8.0f };
         vel = (Vector2){ .x = 80.0f,  .y = 0.0f };
-        pos_data = {0};
-        gdata = {0};
         grounded = true;
     }
 };
 
-typedef struct {
+struct PlatformRec{
     Vector2 pos;
     Vector2 size;
     Rectangle entity_bounds[2];
     Rectangle def_rect;
-    PosData pos_data;
-} PlatformRec;
-
-#if 0
-PlayerRec player = {
-    .pos = (Vector2){ .x = WINDOW_WIDTH/2, .y = WINDOW_HEIGHT/2 },
-    .size = (Vector2){ .x = 8.0f, .y = 8.0f },
-    .vel = (Vector2){ 0.0f, 0.0f },
-    .pos_data = {0},
-    .gdata = {0},
-    .grounded = false,
+    HandmadeDA<Vector2> pos_data;
 };
-#endif
-
-PlayerRec player;
-EntityRec entity;
-
-#if 0
-EntityRec entity = {
-    .pos = (Vector2){ .x = (WINDOW_WIDTH/2 + 32), .y = (WINDOW_HEIGHT/2 + 38) - 8.0f },
-    .size = (Vector2){ .x = 8.0f, .y = 8.0f },
-    .vel = (Vector2){ 80.0f, 0.0f },
-    .pos_data = {0},
-    .gdata = {0},
-    .grounded = true,
-};
-#endif
-
-GameplayMode game_state = GAMEPLAY;
-
-#define draw_player_eyes(player)                    \
-    for (size_t i = 0; i < 2; ++i) {                \
-        DrawRectangleRec(player.eyes[i], BLACK);    \
-    }                                               \
-
-#define update_player_eyes_pos(player)                          \
-    do {                                                        \
-        player.eyes[0].x = player.pos.x + 1.7778;               \
-        player.eyes[0].y = player.pos.y + 2.6667;               \
-        player.eyes[1].x = player.pos.x + 2.6667 + 1.7778;      \
-        player.eyes[1].y = player.pos.y + 2.6667;               \
-    } while (0)
-
-
-#define init_camera(player)                                                          \
-    do {                                                                             \
-        player.camera.offset = (Vector2){ GetScreenWidth()/2, GetScreenHeight()/2 }; \
-        player.camera.target = player.pos;                                           \
-        player.camera.zoom = 4.0f;                                                   \
-    } while (0)                                                                      
 
 #define define_rect(rect)                   \
     do {                                    \
@@ -176,6 +98,5 @@ GameplayMode game_state = GAMEPLAY;
         }                                                               \
     } while (0)
 
-#include "test_world_data.h"
 
 #endif // COGGINS_H_

@@ -21,6 +21,14 @@ int main(int argc, char **argv)
     nob_cc_output(&cmd, BUILD_FOLDER"coggins.o"); 
     if (!nob_cmd_run(&cmd)) return 1;
 
+    Nob_Cmd data = {0};
+    nob_cmd_append(&data, "g++", "-c");
+    nob_cmd_append(&data, "-I"RAYLIB_HEADERS, "-I"IMGUI_FOLDER, "-I"RLIMGUI_FOLDER,
+            "-L"RAYLIB_STATIC_LIB, "-lraylib");
+    nob_cc_inputs(&data, "src/datafuncs.cpp");
+    nob_cc_output(&data, BUILD_FOLDER"datafuncs.o"); 
+    if (!nob_cmd_run(&data)) return 1;
+
     Nob_Cmd imgui1 = {0};
     nob_cmd_append(&imgui1, "g++", "-c");
     nob_cmd_append(&imgui1, "-I"IMGUI_FOLDER);
@@ -61,8 +69,8 @@ int main(int argc, char **argv)
     nob_cmd_append(&combine, "g++");
     nob_cmd_append(&combine, "-I"IMGUI_FOLDER, "-I"RAYLIB_HEADERS, "-I"RLIMGUI_FOLDER,
             "-L"RAYLIB_STATIC_LIB, "-lraylib");
-    nob_cc_inputs(&combine, BUILD_FOLDER"coggins.o", BUILD_FOLDER"imgui.o", 
-            BUILD_FOLDER"imgui_draw.o", BUILD_FOLDER"imgui_tables.o",
+    nob_cc_inputs(&combine, BUILD_FOLDER"coggins.o", BUILD_FOLDER"datafuncs.o", 
+            BUILD_FOLDER"imgui.o", BUILD_FOLDER"imgui_draw.o", BUILD_FOLDER"imgui_tables.o",
             BUILD_FOLDER"imgui_widgets.o", BUILD_FOLDER"rlImGui.o");
     nob_cc_output(&combine, BUILD_FOLDER"coggins");
     if (!nob_cmd_run(&combine)) return 1;

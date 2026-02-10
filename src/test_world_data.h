@@ -77,12 +77,12 @@ void FireCannonPlats()
         da_append(&cannon_plats, birth_point);
         cannon_plats.timer = 0.0f;
     }
-    da_foreach(PlatformRec, plat, &cannon_plats) {
+    da_foreach(auto, plat, &cannon_plats) {
         update_cannon_plat_pos(plat);
         update_cannon_def_rect(plat);
         da_append(&plat->pos_data, plat->pos);
     }
-    da_foreach(PlatformRec, plat, &cannon_plats) {
+    da_foreach(auto, plat, &cannon_plats) {
         DrawRectangleV(plat->pos, plat->size, GREEN);
     }
 }
@@ -92,7 +92,7 @@ void RewindCannonPlats()
 {
     cannon_plats.timer = da_last(&cannon_plats.time_info);
     da_remove_unordered(&cannon_plats.time_info, cannon_plats.time_info.count-1);
-    da_foreach(PlatformRec, plat, &cannon_plats) {
+    da_foreach(auto, plat, &cannon_plats) {
         if (plat->pos_data.count < 1) {
             size_t index = plat - cannon_plats.items;
             da_remove_unordered(&cannon_plats, index);
